@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<title>Jquery UI を利用した 対象との交換型並び替え</title>
+<style>
+    body{
+        background: #212121;
+        color: #cccccc;
+    }
+    h1{
+        text-align: center;
+    }
+    .sortable{
+        width: 60%;
+        margin: 100px auto;
+        border: 1px solid #333;
+        display: flex;
+        flex-wrap: wrap;
+        background: #BDBDBD;
+    }
+    .sortable li{
+        width: 160px; height: 90px;
+        list-style: none;
+        border: 1px dotted;
+        margin: 5px;
+        line-height: 90px;
+        text-align: center;
+        color: #333333;
+    }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h1>Jquery UI を利用した 対象との交換型並び替え</h1>
+    <ul class="sortable">
+        <li style="background:#e53935">Red</li>
+        <li style="background:#43A047">Green</li>
+        <li style="background:#1E88E5">Blue</li>
+        <li style="background:#FDD835">Yellow</li>
+        <li style="background:#8E24AA">Purple</li>
+        <li style="background:#D84315">Orange</li>
+        <li style="background:#37474F">Gray</li>
+    </ul>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+$(function(){
+
+    //ドラッグ中のオブジェクト情報
+    var $dragObj;
+    var $prevObj;
+    var $dragDefPosition;
+    var $revert = true;
+
+    $('.sortable li').draggable({
+        containment: 'ul.sortable',
+        scroll: false,
+        opacity: 0.8,
+        zIndex: 10,
+        revertDuration: 500,
+        start: function(){
+            $dragObj = $(this);
+            $dragDefPosition = $(this).position();
+            $prevObj = $(this).prev();
+            $revert = true;
+        },
+        revert: function(){
+            return $revert;
+        },
+
+    });
+
+    $('.sortable li').droppable({
+        drop: function( event, ui ){
+
+            //ドラッグ無効
+            $('.sortable li').draggable('disable');
+
+            $revert = false;
+            $dropObj = $(this);
+
+            $dragPosition = $dragObj.position();
+            $dropPosition = $dropObj.position();
+
+            $dragObj.animate({
+                top: $dropPosition.top - $dragDefPosition.top,
+                left: $dropPosition.left - $dragDefPosition.left,
+            },'fast'
+            ,function(){
+
+                $dropObj.animate({
+                    top: $dragDefPosition.top - $dropPosition.top,
+                    left: $dragDefPosition.left - $dropPosition.left,
+                },'200'
+                ,function(){
+
+                    $dropObj.before($dragObj);
+                    $dragObj.css({'top':0,'left':0});
+
+                    if( $prevObj.length != 0){
+                    $prevObj.after($dropObj);
+                    }
+                    else{
+                        $('ul.sortable').prepend($dropObj);
+                    }
+                    $dropObj.css({'top':0,'left':0});
+                    
+
+                    //ドラッグ有効
+                    $('.sortable li').draggable('enable');
+
+                });
+            });
+        },
+    });
+});
+</script>
+
+</body>
+</html>
